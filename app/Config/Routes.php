@@ -22,6 +22,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('usuarios/cambiar-rol', 'Usuarios::cambiarRol');
     $routes->post('usuarios/crear', 'Usuarios::crear');
 
+    $routes->get('cargue-masivo', 'CargueMasivo::index');
+    $routes->post('cargue-masivo/procesar', 'CargueMasivo::procesar');
+    $routes->get('cargue-masivo/plantilla', 'CargueMasivo::plantilla');
+    $routes->post('cargue-masivo/vaciar', 'CargueMasivo::vaciar');
+
+    $routes->get('inventario/buscar-equipo', 'Inventario::buscarEquipo');
+
     $routes->get('equipos/formulario', 'Equipos::formulario');
     $routes->post('equipos/guardar', 'Equipos::guardar');
     $routes->get('equipos/bitacora', 'Equipos::bitacora');

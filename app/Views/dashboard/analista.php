@@ -45,6 +45,50 @@
             </div>
         </div>
 
+        <?php if (!empty($statsInventario)): ?>
+        <!-- WIDGET CONTROL DE INVENTARIO Y STOCK -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1 text-dark fs-6">
+                            <i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Estado del Inventario General
+                        </h5>
+                        <span class="text-muted small">Los equipos registrados en tus formularios se sincronizan y descuentan del stock pendiente.</span>
+                    </div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill mt-2 mt-md-0 fw-semibold">
+                        <i class="fa-solid fa-chart-pie me-1"></i> <?= esc((string)$statsInventario['porcentaje']) ?>% Procesado
+                    </span>
+                </div>
+                
+                <div class="row g-2 g-md-3 text-center mb-3">
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-light border">
+                            <small class="text-muted d-block small">Total en Sistema</small>
+                            <span class="fs-5 fw-bold text-dark"><?= esc((string)$statsInventario['totalCargados']) ?></span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-success-subtle border border-success-subtle">
+                            <small class="text-success d-block fw-semibold small">Intervenidos</small>
+                            <span class="fs-5 fw-bold text-success"><?= esc((string)$statsInventario['intervenidos']) ?></span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-warning-subtle border border-warning-subtle">
+                            <small class="text-warning-emphasis d-block fw-semibold small">Pendientes (Stock)</small>
+                            <span class="fs-5 fw-bold text-warning-emphasis"><?= esc((string)$statsInventario['pendientes']) ?></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress" style="height: 10px; border-radius: 5px;">
+                    <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: <?= (float)$statsInventario['porcentaje'] ?>%;" aria-valuenow="<?= (float)$statsInventario['porcentaje'] ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="row g-4 justify-content-center">
             
             <!-- 1. NUEVO REGISTRO DE DIAGNÓSTICO -->

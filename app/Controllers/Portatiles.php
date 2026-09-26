@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\PortatilModel;
 use App\Models\AnalistaModel;
+use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
 
 class Portatiles extends BaseController
@@ -11,12 +12,14 @@ class Portatiles extends BaseController
     protected $portatilModel;
     protected $analistaModel;
     protected $uploadService;
+    protected $inventarioModel;
 
     public function __construct()
     {
-        $this->portatilModel = new PortatilModel();
-        $this->analistaModel = new AnalistaModel();
-        $this->uploadService = new UploadService();
+        $this->portatilModel   = new PortatilModel();
+        $this->analistaModel   = new AnalistaModel();
+        $this->uploadService   = new UploadService();
+        $this->inventarioModel = new InventarioGeneralModel();
     }
 
     public function formulario()
@@ -76,6 +79,9 @@ class Portatiles extends BaseController
         }
 
         if ($this->portatilModel->insert($data)) {
+            // Sincronizar y descontar de pendientes en inventario general
+            $this->inventarioModel->marcarIntervenido($placaId, 'portatil', $nombreAnalista);
+
             if ($isAjax) {
                 return $this->response->setJSON(['status' => 'success', 'message' => 'Registro de portátiles y evidencia guardados correctamente.']);
             }

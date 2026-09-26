@@ -24,82 +24,181 @@
     </div>
 <?php endif; ?>
 
+<!-- PANEL DE CONTROL DE INVENTARIO Y STOCK -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <h5 class="card-title fw-bold mb-0 text-dark">
+                <i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Control de Inventario General y Descuento de Stock
+            </h5>
+            <small class="text-muted">Equipos cargados masivamente vs equipos intervenidos en los módulos de taller.</small>
+        </div>
+        <div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold">
+                <i class="fa-solid fa-chart-pie me-1"></i> <?= $statsInventario['porcentaje'] ?>% Intervenido
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-3 mb-3">
+            <!-- 1. Total en Sistema -->
+            <div class="col-md-6 col-xl-3">
+                <div class="p-3 rounded border bg-light h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">Total en Sistema (Cargue)</span>
+                        <div class="p-2 bg-primary-subtle text-primary rounded-circle">
+                            <i class="fa-solid fa-laptop-file fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="fs-2 fw-bold text-dark"><?= esc((string)$statsInventario['totalCargados']) ?></div>
+                    <div class="text-muted small mt-1">Cargados en inventario masivo</div>
+                </div>
+            </div>
+
+            <!-- 2. Intervenidos (Descontados) -->
+            <div class="col-md-6 col-xl-3">
+                <div class="p-3 rounded border border-success-subtle bg-success-subtle bg-opacity-25 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-success small fw-semibold">Equipos Intervenidos</span>
+                        <div class="p-2 bg-success text-white rounded-circle">
+                            <i class="fa-solid fa-check-double fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="fs-2 fw-bold text-success"><?= esc((string)$statsInventario['intervenidos']) ?></div>
+                    <div class="text-muted small mt-1">Marcados y descontados de stock</div>
+                </div>
+            </div>
+
+            <!-- 3. Pendientes por Intervenir -->
+            <div class="col-md-6 col-xl-3">
+                <div class="p-3 rounded border border-warning-subtle bg-warning-subtle bg-opacity-25 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-warning-emphasis small fw-semibold">Pendientes por Intervenir</span>
+                        <div class="p-2 bg-warning text-dark rounded-circle">
+                            <i class="fa-solid fa-clock-rotate-left fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="fs-2 fw-bold text-warning-emphasis"><?= esc((string)$statsInventario['pendientes']) ?></div>
+                    <div class="text-muted small mt-1">Equipos restantes por gestionar</div>
+                </div>
+            </div>
+
+            <!-- 4. Total Intervenciones Globales -->
+            <div class="col-md-6 col-xl-3">
+                <div class="p-3 rounded border bg-light h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">Intervenciones Globales</span>
+                        <div class="p-2 bg-info-subtle text-info rounded-circle">
+                            <i class="fa-solid fa-screwdriver-wrench fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="fs-2 fw-bold text-info"><?= esc((string)$totalIntervenciones) ?></div>
+                    <div class="text-muted small mt-1">Diagnósticos + Soplado + Laptops</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Progreso de Stock -->
+        <div>
+            <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
+                <span>Avance de Intervenciones sobre Inventario Masivo:</span>
+                <span class="fw-semibold text-dark"><?= esc((string)$statsInventario['intervenidos']) ?> de <?= esc((string)$statsInventario['totalCargados']) ?> equipos (<?= esc((string)$statsInventario['porcentaje']) ?>%)</span>
+            </div>
+            <div class="progress" style="height: 12px; border-radius: 6px;">
+                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: <?= (float)$statsInventario['porcentaje'] ?>%;" aria-valuenow="<?= (float)$statsInventario['porcentaje'] ?>" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DESGLOSE POR MÓDULOS DE TALLER -->
 <div class="row g-3 mb-4">
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="text-muted small">Diagnósticos CPU</div>
-                <div class="fs-3 fw-semibold"><?= $totalEquipos === null ? '—' : $totalEquipos ?></div>
+                <div class="fs-3 fw-semibold"><?= $totalEquipos === null ? '—' : esc((string)$totalEquipos) ?></div>
             </div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Soplado</div>
-                <div class="fs-3 fw-semibold"><?= $totalSoplado === null ? '—' : $totalSoplado ?></div>
+                <div class="text-muted small">Soplado de CPUs</div>
+                <div class="fs-3 fw-semibold"><?= $totalSoplado === null ? '—' : esc((string)$totalSoplado) ?></div>
             </div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Portátiles</div>
-                <div class="fs-3 fw-semibold"><?= $totalPortatiles === null ? '—' : $totalPortatiles ?></div>
+                <div class="text-muted small">Garantías Portátiles</div>
+                <div class="fs-3 fw-semibold"><?= $totalPortatiles === null ? '—' : esc((string)$totalPortatiles) ?></div>
             </div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Analistas</div>
-                <div class="fs-3 fw-semibold"><?= $totalAnalistas === null ? '—' : $totalAnalistas ?></div>
+                <div class="text-muted small">Analistas en Catálogo</div>
+                <div class="fs-3 fw-semibold"><?= $totalAnalistas === null ? '—' : esc((string)$totalAnalistas) ?></div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-lg-4 col-xl">
         <a href="<?= base_url('equipos/formulario') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <i class="fa-solid fa-desktop text-primary mb-2"></i>
                     <h2 class="h6 mb-1 text-dark">Diagnóstico CPU</h2>
-                    <p class="small text-muted mb-0">Nuevo registro de equipos de escritorio.</p>
+                    <p class="small text-muted mb-0">Nuevo registro de escritorio.</p>
                 </div>
             </div>
         </a>
     </div>
-    <div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-lg-4 col-xl">
         <a href="<?= base_url('soplado/formulario') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <i class="fa-solid fa-wind text-info mb-2"></i>
                     <h2 class="h6 mb-1 text-dark">Soplado</h2>
-                    <p class="small text-muted mb-0">Mantenimiento preventivo y evidencias.</p>
+                    <p class="small text-muted mb-0">Mantenimiento preventivo.</p>
                 </div>
             </div>
         </a>
     </div>
-    <div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-lg-4 col-xl">
         <a href="<?= base_url('portatiles/formulario') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <i class="fa-solid fa-laptop text-success mb-2"></i>
                     <h2 class="h6 mb-1 text-dark">Portátiles</h2>
-                    <p class="small text-muted mb-0">Diagnóstico y garantías Lenovo.</p>
+                    <p class="small text-muted mb-0">Garantías Lenovo.</p>
                 </div>
             </div>
         </a>
     </div>
-    <div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-lg-4 col-xl">
+        <a href="<?= base_url('cargue-masivo') ?>" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 border-start border-danger border-3">
+                <div class="card-body">
+                    <i class="fa-solid fa-file-arrow-up text-danger mb-2"></i>
+                    <h2 class="h6 mb-1 text-dark">Cargue Masivo</h2>
+                    <p class="small text-muted mb-0">Importar Excel / CSV.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-4 col-xl">
         <a href="<?= base_url('analistas') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <i class="fa-solid fa-users text-warning mb-2"></i>
                     <h2 class="h6 mb-1 text-dark">Analistas</h2>
-                    <p class="small text-muted mb-0">Catálogo de personal del taller.</p>
+                    <p class="small text-muted mb-0">Catálogo de personal.</p>
                 </div>
             </div>
         </a>

@@ -12,6 +12,7 @@
             <div class="card-body p-4">
 
                 <form id="formGarantias" onsubmit="event.preventDefault(); return false;">
+                    <?= csrf_field() ?>
                     <div class="row g-3">
                         
                         <!-- 1. Analista y Traslado -->
@@ -50,8 +51,14 @@
 
                         <!-- 2. Placa e ID -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Placa ID del equipo *</label>
-                            <input type="text" name="placa_id" id="placa_id" class="form-control" placeholder="Ej: B123456 o Serial" required>
+                            <label class="form-label fw-bold">Placa ID o Serial del equipo *</label>
+                            <div class="input-group">
+                                <input type="text" name="placa_id" id="placa_id" class="form-control" placeholder="Ej: B123456 o Serial" required autocomplete="off">
+                                <span class="input-group-text d-none" id="spinner_placa">
+                                    <i class="fa-solid fa-spinner fa-spin text-primary"></i>
+                                </span>
+                            </div>
+                            <div id="inventario_feedback" class="mt-2"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Tipo de gestión *</label>
@@ -304,6 +311,8 @@ function enviarFormulario() {
             ocultarTodos();
             document.getElementById('preview-container').classList.add('d-none');
             document.getElementById('upload-label').innerText = 'Adjunta o captura la foto del equipo.';
+            const feedbackDiv = document.getElementById('inventario_feedback');
+            if (feedbackDiv) feedbackDiv.innerHTML = '';
         } else {
             mostrarModal('<i class="fa-solid fa-circle-xmark text-danger"></i>', 'Error al guardar', data.message);
         }
@@ -316,5 +325,96 @@ function enviarFormulario() {
         btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Registro';
     });
 }
+
+// Sincronización en tiempo real con inventario al tipear ID o Serial
+document.addEventListener('DOMContentLoaded', function() {
+    const placaInput = document.getElementById('placa_id');
+    const spinnerPlaca = document.getElementById('spinner_placa');
+    const feedbackDiv = document.getElementById('inventario_feedback');
+    let debounceTimer = null;
+
+    if (placaInput) {
+        placaInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (val.length < 2) {
+                if (feedbackDiv) feedbackDiv.innerHTML = '';
+                if (spinnerPlaca) spinnerPlaca.classList.add('d-none');
+                return;
+            }
+
+            if (spinnerPlaca) spinnerPlaca.classList.remove('d-none');
+
+            debounceTimer = setTimeout(() => {
+                fetch('<?= base_url('inventario/buscar-equipo') ?>?query=' + encodeURIComponent(val))
+                    .then(r => r.json())
+                    .then(res => {
+                        if (spinnerPlaca) spinnerPlaca.classList.add('d-none');
+                        if (!feedbackDiv) return;
+
+                        if (res.encontrado && res.equipo) {
+                            const eq = res.equipo;
+                            if (eq.intervenido) {
+                                feedbackDiv.innerHTML = `
+                                    <div class="alert alert-warning py-2 px-3 mb-0 small border-warning shadow-sm">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="fa-solid fa-triangle-exclamation text-warning me-2 fs-5"></i>
+                                            <strong>Equipo en Inventario — ¡YA INTERVENIDO!</strong>
+                                        </div>
+                                        <div class="text-dark">
+                                            <strong>Serial:</strong> <code>${escapeHtml(eq.serial || 'N/A')}</code> | 
+                                            <strong>Placa:</strong> <code>${escapeHtml(eq.placa_id || 'N/A')}</code> | 
+                                            <strong>Equipo:</strong> ${escapeHtml(eq.marca || '')} ${escapeHtml(eq.modelo || '')}
+                                        </div>
+                                        <div class="text-muted mt-1 small">
+                                            <i class="fa-regular fa-clock me-1"></i>Intervenido el <strong>${escapeHtml(eq.fecha_intervencion || '')}</strong> en módulo <strong>${escapeHtml(eq.modulo_intervencion || '')}</strong> por <strong>${escapeHtml(eq.analista_intervencion || 'N/A')}</strong>.
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                feedbackDiv.innerHTML = `
+                                    <div class="alert alert-success py-2 px-3 mb-0 small border-success shadow-sm">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="fa-solid fa-circle-check text-success me-2 fs-5"></i>
+                                            <strong>Equipo sincronizado con Inventario General</strong>
+                                        </div>
+                                        <div class="text-dark">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1">${escapeHtml(eq.tipo_equipo || 'Equipo')}</span>
+                                            <strong>Serial:</strong> <code class="text-dark fw-bold">${escapeHtml(eq.serial || 'N/A')}</code> | 
+                                            <strong>Placa:</strong> <code class="text-dark fw-bold">${escapeHtml(eq.placa_id || 'N/A')}</code>
+                                        </div>
+                                        <div class="text-muted mt-1">
+                                            <strong>Marca / Modelo:</strong> ${escapeHtml(eq.marca || '')} ${escapeHtml(eq.modelo || '')} | 
+                                            <strong>Ubicación:</strong> ${escapeHtml(eq.ubicacion || 'Sede')}
+                                        </div>
+                                        <div class="text-success fw-semibold mt-1">
+                                            <i class="fa-solid fa-arrow-down-long me-1"></i> Se marcará como intervenido y se descontará del inventario pendiente al guardar.
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            feedbackDiv.innerHTML = `
+                                <div class="alert alert-light border py-1 px-2 mb-0 small text-muted">
+                                    <i class="fa-solid fa-info-circle me-1 text-secondary"></i> No registrado en cargue masivo previo. Se registrará como equipo nuevo.
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(() => {
+                        if (spinnerPlaca) spinnerPlaca.classList.add('d-none');
+                    });
+            }, 350);
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function(m) {
+            return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m];
+        });
+    }
+});
 </script>
 <?= $this->endSection() ?>

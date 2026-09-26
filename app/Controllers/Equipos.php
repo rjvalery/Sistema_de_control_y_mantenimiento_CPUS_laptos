@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\EquipoModel;
 use App\Models\AnalistaModel;
+use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
 
 class Equipos extends BaseController
@@ -11,12 +12,14 @@ class Equipos extends BaseController
     protected $equipoModel;
     protected $analistaModel;
     protected $uploadService;
+    protected $inventarioModel;
 
     public function __construct()
     {
-        $this->equipoModel   = new EquipoModel();
-        $this->analistaModel = new AnalistaModel();
-        $this->uploadService = new UploadService();
+        $this->equipoModel     = new EquipoModel();
+        $this->analistaModel   = new AnalistaModel();
+        $this->uploadService   = new UploadService();
+        $this->inventarioModel = new InventarioGeneralModel();
     }
 
     public function formulario()
@@ -56,6 +59,9 @@ class Equipos extends BaseController
         ];
 
         if ($this->equipoModel->insert($data)) {
+            // Sincronizar y descontar de pendientes en inventario general
+            $this->inventarioModel->marcarIntervenido((string)$placaId, 'diagnostico', $nombreAnalista);
+
             return $this->response->setJSON(['status' => 'success', 'message' => 'Guardado correctamente']);
         }
 

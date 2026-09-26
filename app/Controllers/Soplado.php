@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\SopladoModel;
 use App\Models\AnalistaModel;
+use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
 
 class Soplado extends BaseController
@@ -11,12 +12,14 @@ class Soplado extends BaseController
     protected $sopladoModel;
     protected $analistaModel;
     protected $uploadService;
+    protected $inventarioModel;
 
     public function __construct()
     {
-        $this->sopladoModel  = new SopladoModel();
-        $this->analistaModel = new AnalistaModel();
-        $this->uploadService = new UploadService();
+        $this->sopladoModel    = new SopladoModel();
+        $this->analistaModel   = new AnalistaModel();
+        $this->uploadService   = new UploadService();
+        $this->inventarioModel = new InventarioGeneralModel();
     }
 
     public function formulario()
@@ -59,6 +62,9 @@ class Soplado extends BaseController
         ];
 
         if ($this->sopladoModel->insert($data)) {
+            // Sincronizar y descontar de pendientes en inventario general
+            $this->inventarioModel->marcarIntervenido((string)$placaId, 'soplado', $nombreAnalista);
+
             if ($isAjax) {
                 return $this->response->setJSON(['status' => 'success', 'message' => 'Registro y evidencia guardados correctamente.']);
             }
