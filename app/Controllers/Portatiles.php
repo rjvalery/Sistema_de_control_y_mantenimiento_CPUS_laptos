@@ -4,16 +4,19 @@ namespace App\Controllers;
 
 use App\Models\PortatilModel;
 use App\Models\AnalistaModel;
+use App\Services\UploadService;
 
 class Portatiles extends BaseController
 {
     protected $portatilModel;
     protected $analistaModel;
+    protected $uploadService;
 
     public function __construct()
     {
         $this->portatilModel = new PortatilModel();
         $this->analistaModel = new AnalistaModel();
+        $this->uploadService = new UploadService();
     }
 
     public function formulario()
@@ -24,10 +27,27 @@ class Portatiles extends BaseController
 
     public function guardar()
     {
+        $placaId  = (string) $this->request->getPost('placa_id_equipo');
+        $file     = $this->request->getFile('foto_equipo');
+        $fotoRuta = null;
+
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $fotoRuta = $this->uploadService->guardarEvidencia($file, $placaId, 'portatil');
+        }
+
+        $isAjax = $this->request->isAJAX() || $this->request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest';
+
+        if (!$fotoRuta) {
+            if ($isAjax) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'La foto de evidencia es obligatoria o el archivo no es válido.']);
+            }
+            return redirect()->back()->withInput()->with('error', 'La foto de evidencia es obligatoria.');
+        }
+
         $data = [
             'nombre_analista'                => $this->request->getPost('nombre_analista'),
             'numero_traslado'                => $this->request->getPost('numero_traslado'),
-            'placa_id_equipo'                => $this->request->getPost('placa_id_equipo'),
+            'placa_id_equipo'                => $placaId,
             'tipo_gestion'                   => $this->request->getPost('tipo_gestion'),
             'energiza'                       => $this->request->getPost('energiza'),
             'da_video'                       => $this->request->getPost('da_video'),
@@ -47,9 +67,22 @@ class Portatiles extends BaseController
             'created_at'                     => date('Y-m-d H:i:s')
         ];
 
-        $this->portatilModel->insert($data);
+        if ($fotoRuta && $this->portatilModel->db->fieldExists('foto_ruta', 'garantias_portatiles')) {
+            $data['foto_ruta'] = $fotoRuta;
+        }
 
-        return redirect()->to(base_url('portatiles/formulario'))->with('msg', 'Registro de portátiles guardado correctamente.');
+        if ($this->portatilModel->insert($data)) {
+            if ($isAjax) {
+                return $this->response->setJSON(['status' => 'success', 'message' => 'Registro de portátiles y evidencia guardados correctamente.']);
+            }
+            return redirect()->to(base_url('portatiles/formulario'))->with('msg', 'Registro de portátiles guardado correctamente.');
+        }
+
+        if ($isAjax) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Error al guardar en la base de datos.']);
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Error al guardar en base de datos.');
     }
 
     public function bitacora()

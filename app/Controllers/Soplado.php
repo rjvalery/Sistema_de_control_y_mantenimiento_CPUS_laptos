@@ -31,7 +31,12 @@ class Soplado extends BaseController
         $file     = $this->request->getFile('foto_equipo');
         $fotoRuta = $this->uploadService->guardarEvidencia($file, $placaId, 'soplado');
 
+        $isAjax = $this->request->isAJAX() || $this->request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest';
+
         if (!$fotoRuta) {
+            if ($isAjax) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'La foto de evidencia es obligatoria o el archivo no es válido.']);
+            }
             return redirect()->back()->withInput()->with('error', 'La foto de evidencia es obligatoria.');
         }
 
@@ -49,9 +54,18 @@ class Soplado extends BaseController
             'foto_ruta'        => $fotoRuta
         ];
 
-        $this->sopladoModel->insert($data);
+        if ($this->sopladoModel->insert($data)) {
+            if ($isAjax) {
+                return $this->response->setJSON(['status' => 'success', 'message' => 'Registro y evidencia guardados correctamente.']);
+            }
+            return redirect()->to(base_url('soplado/formulario'))->with('msg', 'Registro y evidencia guardados correctamente.');
+        }
 
-        return redirect()->to(base_url('soplado/formulario'))->with('msg', 'Registro y evidencia guardados correctamente.');
+        if ($isAjax) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Error al guardar en la base de datos.']);
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Error al guardar en base de datos.');
     }
 
     public function bitacora()
