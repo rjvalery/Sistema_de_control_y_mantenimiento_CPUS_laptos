@@ -44,8 +44,12 @@ class Portatiles extends BaseController
             return redirect()->back()->withInput()->with('error', 'La foto de evidencia es obligatoria.');
         }
 
+        $nombreAnalista = (session('usuario_rol') === 'analista')
+            ? (string) session('usuario_nombre')
+            : (string) ($this->request->getPost('nombre_analista') ?: session('usuario_nombre'));
+
         $data = [
-            'nombre_analista'                => $this->request->getPost('nombre_analista'),
+            'nombre_analista'                => $nombreAnalista,
             'numero_traslado'                => $this->request->getPost('numero_traslado'),
             'placa_id_equipo'                => $placaId,
             'tipo_gestion'                   => $this->request->getPost('tipo_gestion'),

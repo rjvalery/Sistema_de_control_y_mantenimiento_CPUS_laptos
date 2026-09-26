@@ -16,12 +16,31 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nombre del analista *</label>
-                            <select name="nombre_analista" id="nombre_analista" class="form-select" required>
-                                <option value="" disabled selected>-- Seleccione --</option>
-                                <?php foreach ($analistas as $a): ?>
-                                    <option value="<?= esc($a['nombre']) ?>"><?= esc($a['nombre']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                            <?php if (session('usuario_rol') === 'analista'): ?>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-primary"><i class="fa-solid fa-user-check"></i></span>
+                                    <input type="text" name="nombre_analista" id="nombre_analista" class="form-control bg-light fw-semibold" value="<?= esc(session('usuario_nombre')) ?>" readonly required>
+                                </div>
+                                <div class="form-text text-muted small"><i class="fa-solid fa-lock me-1 text-success"></i>Sincronizado automáticamente con tu sesión activa.</div>
+                            <?php else: ?>
+                                <select name="nombre_analista" id="nombre_analista" class="form-select" required>
+                                    <option value="" disabled>-- Seleccione Analista --</option>
+                                    <?php 
+                                        $encontrado = false;
+                                        foreach ($analistas as $a): 
+                                            $esActual = (trim($a['nombre']) === trim(session('usuario_nombre') ?? ''));
+                                            if ($esActual) $encontrado = true;
+                                    ?>
+                                        <option value="<?= esc($a['nombre']) ?>" <?= $esActual ? 'selected' : '' ?>>
+                                            <?= esc($a['nombre']) ?> <?= $esActual ? '(Tu sesión)' : '' ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                    <?php if (!$encontrado && !empty(session('usuario_nombre'))): ?>
+                                        <option value="<?= esc(session('usuario_nombre')) ?>" selected><?= esc(session('usuario_nombre')) ?> (Tu sesión)</option>
+                                    <?php endif; ?>
+                                </select>
+                                <div class="form-text text-muted small">Selecciona el analista o usa tu sesión actual.</div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Número de Traslado *</label>

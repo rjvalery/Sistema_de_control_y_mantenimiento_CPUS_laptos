@@ -33,8 +33,12 @@ class Equipos extends BaseController
         // Guarda en D:\uploads
         $fotoRuta = $this->uploadService->guardarEvidencia($file, $placaId, 'diagnostico');
 
+        $nombreAnalista = (session('usuario_rol') === 'analista')
+            ? (string) session('usuario_nombre')
+            : (string) ($this->request->getPost('nombre_analista') ?: session('usuario_nombre'));
+
         $data = [
-            'nombre_analista'     => $this->request->getPost('nombre_analista'),
+            'nombre_analista'     => $nombreAnalista,
             'num_traslado'        => $this->request->getPost('num_traslado'),
             'placa_id'            => $placaId,
             'tipo_gestion'        => $this->request->getPost('tipo_gestion'),

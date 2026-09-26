@@ -40,8 +40,12 @@ class Soplado extends BaseController
             return redirect()->back()->withInput()->with('error', 'La foto de evidencia es obligatoria.');
         }
 
+        $nombreAnalista = (session('usuario_rol') === 'analista')
+            ? (string) session('usuario_nombre')
+            : (string) ($this->request->getPost('nombre_analista') ?: session('usuario_nombre'));
+
         $data = [
-            'nombre_analista'  => $this->request->getPost('nombre_analista'),
+            'nombre_analista'  => $nombreAnalista,
             'num_traslado'     => $this->request->getPost('num_traslado'),
             'placa_id'         => $placaId,
             'energiza'         => $this->request->getPost('energiza'),
