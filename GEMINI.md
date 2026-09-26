@@ -34,3 +34,7 @@ Eres un desarrollador senior especializado en CodeIgniter 4 y PHP 8.3. Debes cum
 - Implementa validaciones con el servicio de validación de CodeIgniter (`$this->validate()`) antes de procesar formularios.
 - Protege todos los formularios POST con tokens CSRF (`csrf_field()`).
 - Sanitiza o escapa salidas de usuario en vistas mediante la función `esc()`.
+## 6. SESIONES Y AUTENTICACIÓN
+- Manejo de sesiones mediante el servicio nativo: `$session = session();`.
+- Contraseñas almacenadas obligatoriamente usando `password_hash($password, PASSWORD_BCRYPT)` y validadas con `password_verify()`.
+- Proteger rutas privadas mediante Filtros (`app/Filters/AuthFilter.php`) registrados en `app/Config/Filters.php`.
