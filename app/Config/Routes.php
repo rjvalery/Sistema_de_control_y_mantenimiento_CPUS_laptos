@@ -19,6 +19,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('analistas/agregar', 'Analistas::agregar');
     $routes->get('analistas/eliminar/(:num)', 'Analistas::eliminar/$1');
 
+    $routes->post('usuarios/cambiar-rol', 'Usuarios::cambiarRol');
+    $routes->post('usuarios/crear', 'Usuarios::crear');
+
     $routes->get('equipos/formulario', 'Equipos::formulario');
     $routes->post('equipos/guardar', 'Equipos::guardar');
     $routes->get('equipos/bitacora', 'Equipos::bitacora');

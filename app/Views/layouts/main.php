@@ -43,38 +43,56 @@
                             <i class="fa-solid fa-gauge-high me-1"></i> Dashboard
                         </a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fa-solid fa-desktop me-1"></i> Diagnóstico
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?= base_url('equipos/formulario') ?>">Nuevo Registro</a></li>
-                            <li><a class="dropdown-item" href="<?= base_url('equipos/bitacora') ?>">Bitácora</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fa-solid fa-wind me-1"></i> Soplado
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?= base_url('soplado/formulario') ?>">Nuevo Registro</a></li>
-                            <li><a class="dropdown-item" href="<?= base_url('soplado/bitacora') ?>">Bitácora</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fa-solid fa-laptop me-1"></i> Portátiles
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?= base_url('portatiles/formulario') ?>">Nuevo Registro</a></li>
-                            <li><a class="dropdown-item" href="<?= base_url('portatiles/bitacora') ?>">Bitácora</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('analistas') ?>">
-                            <i class="fa-solid fa-users me-1"></i> Analistas
-                        </a>
-                    </li>
+                    <?php if (session('usuario_rol') === 'analista'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= base_url('equipos/formulario') ?>">
+                                <i class="fa-solid fa-desktop me-1"></i> Diagnóstico
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= base_url('soplado/formulario') ?>">
+                                <i class="fa-solid fa-wind me-1"></i> Soplado
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= base_url('portatiles/formulario') ?>">
+                                <i class="fa-solid fa-laptop me-1"></i> Portátiles
+                            </a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-dropdown="dropdown">
+                                <i class="fa-solid fa-desktop me-1"></i> Diagnóstico
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="<?= base_url('equipos/formulario') ?>">Nuevo Registro</a></li>
+                                <li><a class="dropdown-item" href="<?= base_url('equipos/bitacora') ?>">Bitácora</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-dropdown="dropdown">
+                                <i class="fa-solid fa-wind me-1"></i> Soplado
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="<?= base_url('soplado/formulario') ?>">Nuevo Registro</a></li>
+                                <li><a class="dropdown-item" href="<?= base_url('soplado/bitacora') ?>">Bitácora</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-dropdown="dropdown">
+                                <i class="fa-solid fa-laptop me-1"></i> Portátiles
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="<?= base_url('portatiles/formulario') ?>">Nuevo Registro</a></li>
+                                <li><a class="dropdown-item" href="<?= base_url('portatiles/bitacora') ?>">Bitácora</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= base_url('analistas') ?>">
+                                <i class="fa-solid fa-users me-1"></i> Analistas
+                            </a>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fa-solid fa-user-shield me-1"></i>
