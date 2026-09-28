@@ -3,28 +3,28 @@
 namespace App\Controllers;
 
 use App\Models\SopladoModel;
-use App\Models\AnalistaModel;
+use App\Models\UsuarioModel;
 use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
 
 class Soplado extends BaseController
 {
     protected $sopladoModel;
-    protected $analistaModel;
+    protected $usuarioModel;
     protected $uploadService;
     protected $inventarioModel;
 
     public function __construct()
     {
         $this->sopladoModel    = new SopladoModel();
-        $this->analistaModel   = new AnalistaModel();
+        $this->usuarioModel    = new UsuarioModel();
         $this->uploadService   = new UploadService();
         $this->inventarioModel = new InventarioGeneralModel();
     }
 
     public function formulario()
     {
-        $data['analistas'] = $this->analistaModel->orderBy('nombre', 'ASC')->findAll();
+        $data['analistas'] = $this->usuarioModel->where('rol', 'analista')->where('activo', 1)->orderBy('nombre', 'ASC')->findAll();
         return view('soplado/formulario', $data);
     }
 

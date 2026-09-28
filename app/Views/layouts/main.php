@@ -92,11 +92,6 @@
                                 <i class="fa-solid fa-file-arrow-up me-1"></i> Cargue Masivo
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= base_url('analistas') ?>">
-                                <i class="fa-solid fa-users me-1"></i> Analistas
-                            </a>
-                        </li>
                     <?php endif; ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">

@@ -3,28 +3,28 @@
 namespace App\Controllers;
 
 use App\Models\PortatilModel;
-use App\Models\AnalistaModel;
+use App\Models\UsuarioModel;
 use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
 
 class Portatiles extends BaseController
 {
     protected $portatilModel;
-    protected $analistaModel;
+    protected $usuarioModel;
     protected $uploadService;
     protected $inventarioModel;
 
     public function __construct()
     {
         $this->portatilModel   = new PortatilModel();
-        $this->analistaModel   = new AnalistaModel();
+        $this->usuarioModel    = new UsuarioModel();
         $this->uploadService   = new UploadService();
         $this->inventarioModel = new InventarioGeneralModel();
     }
 
     public function formulario()
     {
-        $data['analistas'] = $this->analistaModel->orderBy('nombre', 'ASC')->findAll();
+        $data['analistas'] = $this->usuarioModel->where('rol', 'analista')->where('activo', 1)->orderBy('nombre', 'ASC')->findAll();
         return view('portatiles/formulario', $data);
     }
 

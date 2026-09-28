@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Models\AnalistaModel;
 use App\Models\EquipoModel;
 use App\Models\PortatilModel;
 use App\Models\InventarioGeneralModel;
@@ -16,10 +15,11 @@ class Dashboard extends BaseController
 {
     public function index(): string
     {
+        $usuarioModel    = new UsuarioModel();
         $totalEquipos    = $this->contarRegistros(new EquipoModel()) ?? 0;
         $totalSoplado    = $this->contarRegistros(new SopladoModel()) ?? 0;
         $totalPortatiles = $this->contarRegistros(new PortatilModel()) ?? 0;
-        $totalAnalistas  = $this->contarRegistros(new AnalistaModel()) ?? 0;
+        $totalAnalistas  = $usuarioModel->where('rol', 'analista')->countAllResults();
         $totalIntervenciones = $totalEquipos + $totalSoplado + $totalPortatiles;
 
         $inventarioModel = new InventarioGeneralModel();

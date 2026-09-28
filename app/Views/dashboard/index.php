@@ -140,7 +140,7 @@
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <div class="text-muted small">Analistas en Catálogo</div>
+                <div class="text-muted small">Analistas de Sistema</div>
                 <div class="fs-3 fw-semibold"><?= $totalAnalistas === null ? '—' : esc((string)$totalAnalistas) ?></div>
             </div>
         </div>
@@ -148,7 +148,7 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-xl-3">
         <a href="<?= base_url('equipos/formulario') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -159,7 +159,7 @@
             </div>
         </a>
     </div>
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-xl-3">
         <a href="<?= base_url('soplado/formulario') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -170,7 +170,7 @@
             </div>
         </a>
     </div>
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-xl-3">
         <a href="<?= base_url('portatiles/formulario') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -181,24 +181,13 @@
             </div>
         </a>
     </div>
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-xl-3">
         <a href="<?= base_url('cargue-masivo') ?>" class="text-decoration-none">
             <div class="card border-0 shadow-sm h-100 border-start border-danger border-3">
                 <div class="card-body">
                     <i class="fa-solid fa-file-arrow-up text-danger mb-2"></i>
                     <h2 class="h6 mb-1 text-dark">Cargue Masivo</h2>
                     <p class="small text-muted mb-0">Importar Excel / CSV.</p>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-6 col-lg-4 col-xl">
-        <a href="<?= base_url('analistas') ?>" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <i class="fa-solid fa-users text-warning mb-2"></i>
-                    <h2 class="h6 mb-1 text-dark">Analistas</h2>
-                    <p class="small text-muted mb-0">Catálogo de personal.</p>
                 </div>
             </div>
         </a>

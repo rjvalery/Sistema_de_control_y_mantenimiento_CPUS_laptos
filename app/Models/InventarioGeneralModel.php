@@ -11,6 +11,14 @@ class InventarioGeneralModel extends Model
     protected $table         = 'inventario_general';
     protected $primaryKey    = 'id';
     protected $allowedFields = [
+        'identificador_1',
+        'identificador_2',
+        'ref_principal',
+        'descripcion',
+        'zona_origen',
+        'ubicacion_origen',
+        'verificado',
+        'observaciones',
         'placa_id',
         'serial',
         'tipo_equipo',
@@ -37,6 +45,14 @@ class InventarioGeneralModel extends Model
     {
         $sql = "CREATE TABLE IF NOT EXISTS `inventario_general` (
             `id` INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            `identificador_1` VARCHAR(100) NULL,
+            `identificador_2` VARCHAR(100) NULL,
+            `ref_principal` VARCHAR(150) NULL,
+            `descripcion` VARCHAR(255) NULL,
+            `zona_origen` VARCHAR(100) NULL,
+            `ubicacion_origen` VARCHAR(150) NULL,
+            `verificado` VARCHAR(50) NULL,
+            `observaciones` TEXT NULL,
             `placa_id` VARCHAR(100) NULL,
             `serial` VARCHAR(100) NULL,
             `tipo_equipo` VARCHAR(80) NULL,
@@ -52,12 +68,32 @@ class InventarioGeneralModel extends Model
             `modulo_intervencion` VARCHAR(50) NULL,
             `analista_intervencion` VARCHAR(120) NULL,
             `created_at` DATETIME NULL,
+            KEY `idx_id1` (`identificador_1`),
+            KEY `idx_id2` (`identificador_2`),
             KEY `idx_placa` (`placa_id`),
             KEY `idx_serial` (`serial`),
             KEY `idx_intervenido` (`intervenido`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
 
         $this->db->query($sql);
+
+        // Asegurar que las columnas del Formato en Cubic existan
+        $columnasCubic = [
+            'identificador_1'  => "ALTER TABLE `inventario_general` ADD COLUMN `identificador_1` VARCHAR(100) NULL AFTER `id`;",
+            'identificador_2'  => "ALTER TABLE `inventario_general` ADD COLUMN `identificador_2` VARCHAR(100) NULL AFTER `identificador_1`;",
+            'ref_principal'    => "ALTER TABLE `inventario_general` ADD COLUMN `ref_principal` VARCHAR(150) NULL AFTER `identificador_2`;",
+            'descripcion'      => "ALTER TABLE `inventario_general` ADD COLUMN `descripcion` VARCHAR(255) NULL AFTER `ref_principal`;",
+            'zona_origen'      => "ALTER TABLE `inventario_general` ADD COLUMN `zona_origen` VARCHAR(100) NULL AFTER `descripcion`;",
+            'ubicacion_origen' => "ALTER TABLE `inventario_general` ADD COLUMN `ubicacion_origen` VARCHAR(150) NULL AFTER `zona_origen`;",
+            'verificado'       => "ALTER TABLE `inventario_general` ADD COLUMN `verificado` VARCHAR(50) NULL AFTER `ubicacion_origen`;",
+            'observaciones'    => "ALTER TABLE `inventario_general` ADD COLUMN `observaciones` TEXT NULL AFTER `verificado`;",
+        ];
+
+        foreach ($columnasCubic as $col => $alter) {
+            if (!$this->db->fieldExists($col, 'inventario_general')) {
+                $this->db->query($alter);
+            }
+        }
 
         // Si la tabla fue creada previamente sin las columnas de intervención, agregarlas
         if (!$this->db->fieldExists('intervenido', 'inventario_general')) {
@@ -73,10 +109,17 @@ class InventarioGeneralModel extends Model
         if (!$this->db->fieldExists('analista_intervencion', 'inventario_general')) {
             $this->db->query("ALTER TABLE `inventario_general` ADD COLUMN `analista_intervencion` VARCHAR(120) NULL AFTER `modulo_intervencion`;");
         }
+
+        // Eliminar base de datos externa 'base_de_datos' si aún existe en MySQL
+        try {
+            $this->db->query("DROP DATABASE IF EXISTS `base_de_datos`;");
+        } catch (\Throwable $e) {
+            // Ignorar si no existen permisos o no existe la base de datos
+        }
     }
 
     /**
-     * Busca un equipo en inventario por coincidencia exacta o cercana con placa_id o serial.
+     * Busca un equipo en inventario por coincidencia exacta o cercana con identificadores o seriales.
      */
     public function buscarPorTermino(string $query): ?array
     {
@@ -88,7 +131,10 @@ class InventarioGeneralModel extends Model
 
         $exacto = $this->builder()
             ->groupStart()
-                ->where('placa_id', $queryLimpia)
+                ->where('identificador_1', $queryLimpia)
+                ->orWhere('identificador_2', $queryLimpia)
+                ->orWhere('ref_principal', $queryLimpia)
+                ->orWhere('placa_id', $queryLimpia)
                 ->orWhere('serial', $queryLimpia)
             ->groupEnd()
             ->orderBy('id', 'DESC')
@@ -99,10 +145,13 @@ class InventarioGeneralModel extends Model
             return $exacto;
         }
 
-        if (strlen($queryLimpia) >= 4) {
+        if (strlen($queryLimpia) >= 3) {
             return $this->builder()
                 ->groupStart()
-                    ->like('placa_id', $queryLimpia)
+                    ->like('identificador_1', $queryLimpia)
+                    ->orLike('identificador_2', $queryLimpia)
+                    ->orLike('ref_principal', $queryLimpia)
+                    ->orLike('placa_id', $queryLimpia)
                     ->orLike('serial', $queryLimpia)
                 ->groupEnd()
                 ->orderBy('id', 'DESC')

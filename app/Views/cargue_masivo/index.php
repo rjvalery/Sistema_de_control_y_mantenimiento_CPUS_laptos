@@ -111,48 +111,63 @@
                     </div>
                     <div class="card-body p-4">
                         <p class="small text-muted mb-3">
-                            El importador mapea automáticamente las columnas y cualquier dato adicional se resguarda en formato JSON:
+                            Estructura de 8 columnas adaptada a la plantilla oficial <strong>Formato en Cubic</strong>:
                         </p>
 
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered small mb-3">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Columna</th>
-                                        <th>Requerido</th>
+                                        <th>Columna (Excel/CSV)</th>
+                                        <th>Tipo</th>
                                         <th>Ejemplo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><code>placa_id</code></td>
-                                        <td><span class="badge bg-danger-subtle text-danger">Sí*</span></td>
-                                        <td>CPU-1029</td>
+                                        <td><code>Identificador 1</code></td>
+                                        <td><span class="badge bg-danger-subtle text-danger">Requerido*</span></td>
+                                        <td>ACT-10021</td>
                                     </tr>
                                     <tr>
-                                        <td><code>serial</code></td>
-                                        <td><span class="badge bg-danger-subtle text-danger">Sí*</span></td>
-                                        <td>SN-49821</td>
+                                        <td><code>Identificador 2</code></td>
+                                        <td><span class="badge bg-danger-subtle text-danger">Requerido*</span></td>
+                                        <td>SN-MBP99201</td>
                                     </tr>
                                     <tr>
-                                        <td><code>tipo_equipo</code></td>
+                                        <td><code>Ref. Principal</code></td>
                                         <td><span class="badge bg-secondary-subtle text-secondary">Opcional</span></td>
-                                        <td>CPU / Laptop</td>
+                                        <td>MacBook Pro 16 M1</td>
                                     </tr>
                                     <tr>
-                                        <td><code>marca</code> / <code>modelo</code></td>
+                                        <td><code>Descripción</code></td>
                                         <td><span class="badge bg-secondary-subtle text-secondary">Opcional</span></td>
-                                        <td>Lenovo M720</td>
+                                        <td>Laptop Apple Corporativo</td>
                                     </tr>
                                     <tr>
-                                        <td><code>ubicacion</code> / <code>estado</code></td>
+                                        <td><code>Zona Origen</code></td>
                                         <td><span class="badge bg-secondary-subtle text-secondary">Opcional</span></td>
-                                        <td>Piso 2 / Activo</td>
+                                        <td>Sede Central</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Ubicación Origen</code></td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary">Opcional</span></td>
+                                        <td>Piso 3 - Puesto 302</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Verificado</code></td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary">Opcional</span></td>
+                                        <td>Verificado / Pendiente</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Observaciones</code></td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary">Opcional</span></td>
+                                        <td>Equipo en buen estado</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <small class="text-muted d-block"><em>* Se requiere al menos placa_id o serial para identificar el registro.</em></small>
+                        <small class="text-muted d-block"><em>* Se requiere al menos Identificador 1, Identificador 2 o Ref. Principal para procesar la fila.</em></small>
                     </div>
                 </div>
             </div>
@@ -164,15 +179,15 @@
             <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
                     <h5 class="card-title fw-bold mb-0 text-dark">
-                        <i class="fa-solid fa-table text-primary me-2"></i>Registros en <code>inventario_general</code>
+                        <i class="fa-solid fa-table text-primary me-2"></i>Registros en Base de Datos (Estructura Cubic)
                         <span class="badge bg-primary ms-1"><?= $totalRegistros ?> total</span>
                     </h5>
-                    <small class="text-muted">Mostrando los últimos 100 registros cargados en la base de datos.</small>
+                    <small class="text-muted">Visualizando los registros almacenados en la tabla <code>inventario_general</code> de la base de datos <code>diagnostico_cpus</code>.</small>
                 </div>
                 
                 <div class="d-flex align-items-center gap-2">
                     <form method="GET" action="<?= base_url('cargue-masivo') ?>" class="d-flex gap-2">
-                        <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar placa, serial, marca..." value="<?= esc($busqueda) ?>">
+                        <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar ID 1, ID 2, Ref, Zona..." value="<?= esc($busqueda) ?>">
                         <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-magnifying-glass"></i></button>
                         <?php if (!empty($busqueda)): ?>
                             <a href="<?= base_url('cargue-masivo') ?>" class="btn btn-outline-danger btn-sm">Limpiar</a>
@@ -180,7 +195,7 @@
                     </form>
 
                     <?php if ($totalRegistros > 0): ?>
-                        <form action="<?= base_url('cargue-masivo/vaciar') ?>" method="POST" onsubmit="return confirm('¿Seguro que deseas vaciar todos los registros de la tabla inventario_general? Esta acción no se puede deshacer.');">
+                        <form action="<?= base_url('cargue-masivo/vaciar') ?>" method="POST" onsubmit="return confirm('¿Seguro que deseas vaciar todos los registros del inventario masivo? Esta acción no se puede deshacer.');">
                             <?= csrf_field() ?>
                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Vaciar tabla">
                                 <i class="fa-solid fa-trash-can"></i>
@@ -195,15 +210,16 @@
                         <thead class="table-dark">
                             <tr>
                                 <th class="ps-3">ID</th>
-                                <th>Placa ID</th>
-                                <th>Serial</th>
-                                <th>Tipo</th>
-                                <th>Marca / Modelo</th>
-                                <th>Ubicación</th>
-                                <th>Estado</th>
-                                <th>Archivo Origen</th>
-                                <th>Cargado Por</th>
-                                <th class="text-end pe-3">Fecha</th>
+                                <th>Identificador 1</th>
+                                <th>Identificador 2</th>
+                                <th>Ref. Principal</th>
+                                <th>Descripción</th>
+                                <th>Zona Origen</th>
+                                <th>Ubicación Origen</th>
+                                <th>Verificado</th>
+                                <th>Observaciones</th>
+                                <th>Intervenido</th>
+                                <th class="text-end pe-3">Fecha Cargue</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -211,16 +227,29 @@
                                 <?php foreach ($registros as $r): ?>
                                     <tr>
                                         <td class="ps-3 text-muted"><?= $r['id'] ?></td>
-                                        <td><strong><?= esc($r['placa_id'] ?: '—') ?></strong></td>
-                                        <td><code><?= esc($r['serial'] ?: '—') ?></code></td>
-                                        <td><span class="badge bg-secondary"><?= esc($r['tipo_equipo'] ?: 'General') ?></span></td>
-                                        <td><?= esc(trim(($r['marca'] ?? '') . ' ' . ($r['modelo'] ?? ''))) ?: '—' ?></td>
-                                        <td><?= esc($r['ubicacion'] ?: '—') ?></td>
+                                        <td><strong><?= esc($r['identificador_1'] ?: ($r['placa_id'] ?: '—')) ?></strong></td>
+                                        <td><code><?= esc($r['identificador_2'] ?: ($r['serial'] ?: '—')) ?></code></td>
+                                        <td><?= esc($r['ref_principal'] ?: ($r['modelo'] ?: '—')) ?></td>
+                                        <td><span class="badge bg-secondary"><?= esc($r['descripcion'] ?: ($r['tipo_equipo'] ?: '—')) ?></span></td>
+                                        <td><?= esc($r['zona_origen'] ?: '—') ?></td>
+                                        <td><?= esc($r['ubicacion_origen'] ?: ($r['ubicacion'] ?: '—')) ?></td>
                                         <td>
-                                            <span class="badge bg-info-subtle text-dark border"><?= esc($r['estado'] ?: 'Cargado') ?></span>
+                                            <span class="badge bg-info-subtle text-dark border"><?= esc($r['verificado'] ?: ($r['estado'] ?: 'Cargado')) ?></span>
                                         </td>
-                                        <td class="small text-muted"><?= esc($r['archivo_origen'] ?: '—') ?></td>
-                                        <td class="small"><?= esc($r['usuario_cargue'] ?: '—') ?></td>
+                                        <td class="small text-muted" style="max-width: 180px; overflow: hidden; text-overflow: ellipsis;">
+                                            <?= esc($r['observaciones'] ?: '—') ?>
+                                        </td>
+                                        <td>
+                                            <?php if ((int)($r['intervenido'] ?? 0) === 1): ?>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                    <i class="fa-solid fa-check me-1"></i><?= esc($r['modulo_intervencion'] ?: 'Intervenido') ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                                    Pendiente
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td class="text-end pe-3 text-muted small">
                                             <?= !empty($r['created_at']) ? date('d/m/Y H:i', strtotime($r['created_at'])) : '—' ?>
                                         </td>
@@ -228,8 +257,8 @@
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="10" class="text-center text-muted py-4">
-                                        No hay registros en la tabla <code>inventario_general</code>. Sube un archivo CSV para comenzar.
+                                    <td colspan="11" class="text-center text-muted py-4">
+                                        No hay registros en la base de datos de inventario. Descarga la plantilla de Formato en Cubic o sube tu archivo CSV para comenzar.
                                     </td>
                                 </tr>
                             <?php endif; ?>

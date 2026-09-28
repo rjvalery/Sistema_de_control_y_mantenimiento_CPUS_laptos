@@ -32,11 +32,16 @@ class CargueMasivo extends BaseController
 
         if ($busqueda !== '') {
             $builder->groupStart()
-                ->like('placa_id', $busqueda)
+                ->like('identificador_1', $busqueda)
+                ->orLike('identificador_2', $busqueda)
+                ->orLike('ref_principal', $busqueda)
+                ->orLike('descripcion', $busqueda)
+                ->orLike('zona_origen', $busqueda)
+                ->orLike('ubicacion_origen', $busqueda)
+                ->orLike('verificado', $busqueda)
+                ->orLike('observaciones', $busqueda)
+                ->orLike('placa_id', $busqueda)
                 ->orLike('serial', $busqueda)
-                ->orLike('marca', $busqueda)
-                ->orLike('modelo', $busqueda)
-                ->orLike('ubicacion', $busqueda)
                 ->groupEnd();
         }
 
@@ -53,7 +58,7 @@ class CargueMasivo extends BaseController
     }
 
     /**
-     * Descarga la plantilla CSV oficial con codificación UTF-8 para Excel.
+     * Descarga la plantilla CSV oficial con codificación UTF-8 basada en Formato en Cubic (8 columnas).
      */
     public function plantilla(): ResponseInterface
     {
@@ -62,25 +67,25 @@ class CargueMasivo extends BaseController
         }
 
         $delimitador = ';';
-        $filename    = 'plantilla_cargue_masivo_inventario.csv';
+        $filename    = 'plantilla_cargue_formato_cubic.csv';
 
         $headers = [
-            'placa_id',
-            'serial',
-            'tipo_equipo',
-            'marca',
-            'modelo',
-            'ubicacion',
-            'estado',
-            'observaciones'
+            'Identificador 1',
+            'Identificador 2',
+            'Ref. Principal',
+            'Descripción',
+            'Zona Origen',
+            'Ubicación Origen',
+            'Verificado',
+            'Observaciones'
         ];
 
         $ejemplos = [
-            ['CPU-001', 'SN-A10099', 'CPU', 'Lenovo', 'ThinkCentre M720', 'Piso 2 - Operaciones', 'Activo', 'Equipo asignado'],
-            ['LAP-002', 'SN-L88721', 'Portatil', 'HP', 'ProBook 450 G8', 'Piso 3 - Finanzas', 'En reparacion', 'Revisión técnica'],
+            ['ACT-10021', 'SN-MBP99201', 'MacBook Pro 16 M1', 'Portátil corporativo Apple', 'Sede Central', 'Piso 3 - Operaciones', 'Verificado', 'Equipo en buen estado físico'],
+            ['ACT-10022', 'SN-TC883011', 'ThinkCentre M70q', 'CPU de escritorio Lenovo', 'Sede Norte', 'Bodega 1 - Estante B', 'Pendiente', 'Requiere mantenimiento y soplado'],
         ];
 
-        $output = "\xEF\xBB\xBF"; // UTF-8 BOM
+        $output = "\xEF\xBB\xBF"; // UTF-8 BOM para compatibilidad total con Excel
         $output .= implode($delimitador, $headers) . "\r\n";
         foreach ($ejemplos as $row) {
             $output .= implode($delimitador, $row) . "\r\n";
@@ -95,7 +100,7 @@ class CargueMasivo extends BaseController
     }
 
     /**
-     * Procesa la importación directa a la tabla inventario_general.
+     * Procesa la importación masiva adaptada a las 8 columnas del Formato en Cubic.
      */
     public function procesar(): ResponseInterface
     {
@@ -112,7 +117,7 @@ class CargueMasivo extends BaseController
 
         $ext = strtolower($file->getClientExtension());
         if (!in_array($ext, ['csv', 'txt'], true)) {
-            return redirect()->to(base_url('cargue-masivo'))->with('error', 'El archivo debe tener extensión .csv.');
+            return redirect()->to(base_url('cargue-masivo'))->with('error', 'El archivo debe tener extensión .csv o .txt.');
         }
 
         $realPath = $file->getTempName();
@@ -136,7 +141,6 @@ class CargueMasivo extends BaseController
 
         $delimitador = (substr_count($primeraLinea, ';') >= substr_count($primeraLinea, ',')) ? ';' : ',';
 
-        // Rebobinar para procesar con el delimitador detectado
         rewind($handle);
         if ($bom === "\xEF\xBB\xBF") {
             fread($handle, 3);
@@ -148,7 +152,14 @@ class CargueMasivo extends BaseController
             return redirect()->to(base_url('cargue-masivo'))->with('error', 'No se encontraron encabezados válidos.');
         }
 
-        $headers = array_map(static fn($h) => strtolower(trim((string)$h)), $rawHeaders);
+        // Normalizar encabezados (quitar tildes, minúsculas y caracteres extraños)
+        $headers = array_map(function ($h) {
+            $str = mb_strtolower(trim((string)$h), 'UTF-8');
+            $str = str_replace(['á', 'é', 'í', 'ó', 'ú', 'ñ'], ['a', 'e', 'i', 'o', 'u', 'n'], $str);
+            $str = preg_replace('/[^a-z0-9_]/', '_', $str);
+            return trim(preg_replace('/_+/', '_', $str), '_');
+        }, $rawHeaders);
+
         $nombreArchivo = $file->getClientName();
         $usuarioCargue = (string) session('usuario_nombre');
         $ahora = date('Y-m-d H:i:s');
@@ -168,40 +179,46 @@ class CargueMasivo extends BaseController
                 }
             }
 
-            // Identificar campos clave con alias comunes
-            $placa = $mapped['placa_id'] ?? ($mapped['placa'] ?? ($mapped['activo'] ?? ($mapped['id_equipo'] ?? null)));
-            $serial = $mapped['serial'] ?? ($mapped['serie'] ?? ($mapped['numero_serie'] ?? ($mapped['sn'] ?? null)));
-            $tipo = $mapped['tipo_equipo'] ?? ($mapped['tipo'] ?? ($mapped['equipo'] ?? ($mapped['clase'] ?? null)));
-            $marca = $mapped['marca'] ?? ($mapped['fabricante'] ?? null);
-            $modelo = $mapped['modelo'] ?? null;
-            $ubicacion = $mapped['ubicacion'] ?? ($mapped['sede'] ?? ($mapped['area'] ?? ($mapped['sitio'] ?? null)));
-            $estado = $mapped['estado'] ?? ($mapped['condicion'] ?? ($mapped['estatus'] ?? null));
+            // Mapeo flexible de las 8 columnas del Formato en Cubic
+            $id1             = $mapped['identificador_1'] ?? $mapped['identificador1'] ?? $mapped['placa_id'] ?? $mapped['placa'] ?? $mapped['activo'] ?? null;
+            $id2             = $mapped['identificador_2'] ?? $mapped['identificador2'] ?? $mapped['serial'] ?? $mapped['serie'] ?? $mapped['sn'] ?? null;
+            $refPrincipal    = $mapped['ref_principal'] ?? $mapped['refprincipal'] ?? $mapped['referencia'] ?? $mapped['modelo'] ?? null;
+            $descripcion     = $mapped['descripcion'] ?? $mapped['tipo_equipo'] ?? $mapped['equipo'] ?? $mapped['detalle'] ?? null;
+            $zonaOrigen      = $mapped['zona_origen'] ?? $mapped['zona'] ?? $mapped['sede'] ?? $mapped['bodega'] ?? null;
+            $ubicacionOrigen = $mapped['ubicacion_origen'] ?? $mapped['ubicacion'] ?? $mapped['puesto'] ?? null;
+            $verificado      = $mapped['verificado'] ?? $mapped['estado'] ?? $mapped['estatus'] ?? null;
+            $observaciones   = $mapped['observaciones'] ?? $mapped['notas'] ?? $mapped['comentario'] ?? null;
 
-            // Si no tiene placa ni serial, omitir
-            if (empty($placa) && empty($serial)) {
+            // Si la fila no contiene ningún dato identificador clave, se omite
+            if (empty($id1) && empty($id2) && empty($refPrincipal)) {
                 $errores++;
                 continue;
             }
 
-            // Campos sobrantes para datos_adicionales
-            $adicionales = array_diff_key($mapped, array_flip([
-                'placa_id', 'placa', 'activo', 'id_equipo',
-                'serial', 'serie', 'numero_serie', 'sn',
-                'tipo_equipo', 'tipo', 'equipo', 'clase',
-                'marca', 'fabricante', 'modelo',
-                'ubicacion', 'sede', 'area', 'sitio',
-                'estado', 'condicion', 'estatus'
-            ]));
+            // Datos derivados para compatibilidad total con el resto del sistema (formularios/dashboard)
+            $placaDerivada = !empty($id1) ? $id1 : $id2;
+            $serialDerivado = !empty($id2) ? $id2 : $id1;
+            $tipoDerivado = !empty($descripcion) ? $descripcion : 'General';
+            $modeloDerivado = !empty($refPrincipal) ? $refPrincipal : $descripcion;
+            $ubicacionDerivada = trim(($zonaOrigen ?? '') . ($ubicacionOrigen ? ' - ' . $ubicacionOrigen : ''), ' -');
+            $estadoDerivado = !empty($verificado) ? $verificado : 'Cargado';
 
             $insertData = [
-                'placa_id'          => $placa,
-                'serial'            => $serial,
-                'tipo_equipo'       => $tipo,
-                'marca'             => $marca,
-                'modelo'            => $modelo,
-                'ubicacion'         => $ubicacion,
-                'estado'            => $estado,
-                'datos_adicionales' => !empty($adicionales) ? json_encode($adicionales, JSON_UNESCAPED_UNICODE) : null,
+                'identificador_1'   => $id1,
+                'identificador_2'   => $id2,
+                'ref_principal'     => $refPrincipal,
+                'descripcion'       => $descripcion,
+                'zona_origen'       => $zonaOrigen,
+                'ubicacion_origen'  => $ubicacionOrigen,
+                'verificado'        => $verificado,
+                'observaciones'     => $observaciones,
+                'placa_id'          => $placaDerivada,
+                'serial'            => $serialDerivado,
+                'tipo_equipo'       => $tipoDerivado,
+                'marca'             => null,
+                'modelo'            => $modeloDerivado,
+                'ubicacion'         => $ubicacionDerivada,
+                'estado'            => $estadoDerivado,
                 'archivo_origen'    => $nombreArchivo,
                 'usuario_cargue'    => $usuarioCargue,
                 'created_at'        => $ahora,
@@ -218,14 +235,14 @@ class CargueMasivo extends BaseController
 
         $msg = "Cargue masivo completado. Se insertaron <strong>{$insertados}</strong> registros en la tabla <code>inventario_general</code>.";
         if ($errores > 0) {
-            $msg .= " Hubo {$errores} filas omitidas por falta de placa/serial.";
+            $msg .= " Hubo {$errores} filas omitidas por no tener identificadores válidos.";
         }
 
         return redirect()->to(base_url('cargue-masivo'))->with('msg', $msg);
     }
 
     /**
-     * Permite vaciar la tabla inventario_general si se requiere recargar de cero.
+     * Permite vaciar la tabla inventario_general.
      */
     public function vaciar(): ResponseInterface
     {
@@ -236,7 +253,7 @@ class CargueMasivo extends BaseController
         $this->inventarioModel->asegurarTabla();
         $this->inventarioModel->truncate();
 
-        return redirect()->to(base_url('cargue-masivo'))->with('msg', 'La tabla inventario_general ha sido vaciada correctamente.');
+        return redirect()->to(base_url('cargue-masivo'))->with('msg', 'Los registros de inventario_general han sido vaciados correctamente.');
     }
 
     private function filaEstaVacia(array $row): bool

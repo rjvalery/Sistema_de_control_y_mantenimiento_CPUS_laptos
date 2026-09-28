@@ -14,10 +14,8 @@ $routes->get('logout', 'Auth::logout', ['filter' => 'auth']);
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('/', 'Dashboard::index');
     $routes->get('dashboard', 'Dashboard::index');
+    $routes->get('dashboard/exportar-sql', 'Dashboard::exportarSql');
 
-    $routes->get('analistas', 'Analistas::index');
-    $routes->post('analistas/agregar', 'Analistas::agregar');
-    $routes->get('analistas/eliminar/(:num)', 'Analistas::eliminar/$1');
 
     $routes->post('usuarios/cambiar-rol', 'Usuarios::cambiarRol');
     $routes->post('usuarios/crear', 'Usuarios::crear');

@@ -3,28 +3,28 @@
 namespace App\Controllers;
 
 use App\Models\EquipoModel;
-use App\Models\AnalistaModel;
+use App\Models\UsuarioModel;
 use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
 
 class Equipos extends BaseController
 {
     protected $equipoModel;
-    protected $analistaModel;
+    protected $usuarioModel;
     protected $uploadService;
     protected $inventarioModel;
 
     public function __construct()
     {
         $this->equipoModel     = new EquipoModel();
-        $this->analistaModel   = new AnalistaModel();
+        $this->usuarioModel    = new UsuarioModel();
         $this->uploadService   = new UploadService();
         $this->inventarioModel = new InventarioGeneralModel();
     }
 
     public function formulario()
     {
-        $data['analistas'] = $this->analistaModel->orderBy('nombre', 'ASC')->findAll();
+        $data['analistas'] = $this->usuarioModel->where('rol', 'analista')->where('activo', 1)->orderBy('nombre', 'ASC')->findAll();
         return view('equipos/formulario', $data);
     }
 
