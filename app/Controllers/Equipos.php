@@ -6,6 +6,7 @@ use App\Models\EquipoModel;
 use App\Models\UsuarioModel;
 use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class Equipos extends BaseController
 {
@@ -85,7 +86,7 @@ class Equipos extends BaseController
         return view('equipos/bitacora', $data);
     }
 
-    public function exportar()
+    public function exportar(): ResponseInterface
     {
         $busqueda = trim($this->request->getGet('buscar') ?? '');
         $builder  = $this->equipoModel->builder();
@@ -97,44 +98,49 @@ class Equipos extends BaseController
         }
 
         $registros = $builder->orderBy('id', 'DESC')->get()->getResultArray();
-        $filename  = "Reporte_Equipos_" . date('Ymd_His') . ".xls";
+        $filename  = "Reporte_Equipos_Diagnostico_" . date('Ymd_His') . ".csv";
+        $delimitador = ';';
 
-        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        header("Pragma: no-cache");
-        header("Expires: 0");
+        $headers = [
+            'ID', 'Fecha/Hora', 'Analista', 'N° Traslado',
+            'Placa ID', 'Gestión', 'Energiza', 'Da Video',
+            'Estado Actual', 'Intervención', 'Origen Pieza', 'Novedad',
+            'Motivo Baja', 'Serial Disco', 'Ubicación Destino'
+        ];
 
-        echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />";
-        echo "<table border='1'>
-                <thead>
-                    <tr style='background-color: #343a40; color: #ffffff;'>
-                        <th>ID</th><th>Fecha/Hora</th><th>Analista</th><th>Traslado</th>
-                        <th>Placa ID</th><th>Gestión</th><th>Energiza</th><th>Video</th>
-                        <th>Estado</th><th>Intervención</th><th>Origen</th><th>Novedad</th>
-                        <th>Motivo Baja</th><th>Serial Disco</th><th>Ubicación Destino</th>
-                    </tr>
-                </thead>
-                <tbody>";
+        $output = "\xEF\xBB\xBF"; // UTF-8 BOM para apertura directa en Excel
+        $output .= implode($delimitador, $headers) . "\r\n";
+
         foreach ($registros as $row) {
-            echo "<tr>
-                    <td>{$row['id']}</td>
-                    <td>{$row['fecha_creacion']}</td>
-                    <td>" . esc($row['nombre_analista']) . "</td>
-                    <td>" . esc($row['num_traslado']) . "</td>
-                    <td>" . esc($row['placa_id']) . "</td>
-                    <td>" . esc($row['tipo_gestion']) . "</td>
-                    <td>" . esc($row['energiza'] ?? '-') . "</td>
-                    <td>" . esc($row['da_video'] ?? '-') . "</td>
-                    <td>" . esc($row['estado_actual'] ?? '-') . "</td>
-                    <td>" . esc($row['que_va_intervenir'] ?? '-') . "</td>
-                    <td>" . esc($row['origen_pieza'] ?? '-') . "</td>
-                    <td>" . esc($row['descripcion_novedad'] ?? '-') . "</td>
-                    <td>" . esc($row['motivo_baja'] ?? '-') . "</td>
-                    <td>" . esc($row['serial_disco'] ?? '-') . "</td>
-                    <td>" . esc($row['ubicacion_destino'] ?? '-') . "</td>
-                  </tr>";
+            $novedad = str_replace(["\r\n", "\r", "\n", '"'], [' ', ' ', ' ', '""'], (string)($row['descripcion_novedad'] ?? '-'));
+            $motivoBaja = str_replace(["\r\n", "\r", "\n", '"'], [' ', ' ', ' ', '""'], (string)($row['motivo_baja'] ?? '-'));
+
+            $line = [
+                $row['id'],
+                $row['fecha_creacion'],
+                '"' . str_replace('"', '""', (string)($row['nombre_analista'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['num_traslado'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['placa_id'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['tipo_gestion'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['energiza'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['da_video'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['estado_actual'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['que_va_intervenir'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['origen_pieza'] ?? '-')) . '"',
+                '"' . $novedad . '"',
+                '"' . $motivoBaja . '"',
+                '"' . str_replace('"', '""', (string)($row['serial_disco'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['ubicacion_destino'] ?? '-')) . '"',
+            ];
+
+            $output .= implode($delimitador, $line) . "\r\n";
         }
-        echo "</tbody></table>";
-        exit;
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv; charset=utf-8')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setHeader('Pragma', 'no-cache')
+            ->setHeader('Expires', '0')
+            ->setBody($output);
     }
 }

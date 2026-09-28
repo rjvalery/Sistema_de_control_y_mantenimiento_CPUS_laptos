@@ -6,6 +6,7 @@ use App\Models\SopladoModel;
 use App\Models\UsuarioModel;
 use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class Soplado extends BaseController
 {
@@ -95,7 +96,7 @@ class Soplado extends BaseController
         return view('soplado/bitacora', $data);
     }
 
-    public function exportar()
+    public function exportar(): ResponseInterface
     {
         $busqueda = trim($this->request->getGet('buscar') ?? '');
         $builder  = $this->sopladoModel->builder();
@@ -107,54 +108,44 @@ class Soplado extends BaseController
         }
 
         $registros = $builder->orderBy('id', 'DESC')->get()->getResultArray();
-        $filename  = "bitacora_soplado_" . date('Y-m-d_H-i') . ".xls";
+        $filename  = "Reporte_Soplado_CPUs_" . date('Ymd_His') . ".csv";
+        $delimitador = ';';
 
-        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        header("Pragma: no-cache");
-        header("Expires: 0");
+        $headers = [
+            'ID', 'Fecha/Hora', 'Analista', 'N° Traslado',
+            'Placa ID', 'Energiza', 'Da Video', 'Detecta Disco',
+            'Ingresó BIOS', 'Pasta Térmica', 'Gel Cucarachas', 'Contenido Máquina'
+        ];
 
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<?mso-application progid="Excel.Sheet"?>';
-        ?>
-        <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-          <Styles>
-            <Style ss:ID="Header"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#2563EB" ss:Pattern="Solid"/></Style>
-          </Styles>
-          <Worksheet ss:Name="Bitácora Soplado">
-            <Table>
-              <Row>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">ID</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Analista</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">N° Traslado</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Placa ID</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Energiza</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Da Video</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Detecta Disco</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Ingresó BIOS</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Pasta Térmica</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Gel Cucarachas</Data></Cell>
-                <Cell ss:StyleID="Header"><Data ss:Type="String">Contenido</Data></Cell>
-              </Row>
-              <?php foreach ($registros as $row): ?>
-              <Row>
-                <Cell><Data ss:Type="Number"><?= $row['id'] ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['nombre_analista']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['num_traslado']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['placa_id']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['energiza']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['da_video']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['detecta_disco']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['ingreso_bios']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['pasta_termica']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['gel_cucarachas']) ?></Data></Cell>
-                <Cell><Data ss:Type="String"><?= esc($row['maquina_contenia']) ?></Data></Cell>
-              </Row>
-              <?php endforeach; ?>
-            </Table>
-          </Worksheet>
-        </Workbook>
-        <?php
-        exit;
+        $output = "\xEF\xBB\xBF"; // UTF-8 BOM para apertura directa en Excel
+        $output .= implode($delimitador, $headers) . "\r\n";
+
+        foreach ($registros as $row) {
+            $contenido = str_replace(["\r\n", "\r", "\n", '"'], [' ', ' ', ' ', '""'], (string)($row['maquina_contenia'] ?? '-'));
+
+            $line = [
+                $row['id'],
+                $row['fecha_creacion'] ?? ($row['created_at'] ?? ''),
+                '"' . str_replace('"', '""', (string)($row['nombre_analista'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['num_traslado'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['placa_id'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['energiza'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['da_video'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['detecta_disco'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['ingreso_bios'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['pasta_termica'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['gel_cucarachas'] ?? '-')) . '"',
+                '"' . $contenido . '"',
+            ];
+
+            $output .= implode($delimitador, $line) . "\r\n";
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv; charset=utf-8')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setHeader('Pragma', 'no-cache')
+            ->setHeader('Expires', '0')
+            ->setBody($output);
     }
 }

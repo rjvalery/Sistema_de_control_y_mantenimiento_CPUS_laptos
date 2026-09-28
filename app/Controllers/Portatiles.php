@@ -6,6 +6,7 @@ use App\Models\PortatilModel;
 use App\Models\UsuarioModel;
 use App\Models\InventarioGeneralModel;
 use App\Services\UploadService;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class Portatiles extends BaseController
 {
@@ -112,7 +113,7 @@ class Portatiles extends BaseController
         return view('portatiles/bitacora', $data);
     }
 
-    public function exportar()
+    public function exportar(): ResponseInterface
     {
         $busqueda = trim($this->request->getGet('buscar') ?? '');
         $builder  = $this->portatilModel->builder();
@@ -124,48 +125,57 @@ class Portatiles extends BaseController
         }
 
         $registros = $builder->orderBy('id', 'DESC')->get()->getResultArray();
-        $filename  = "bitacora_garantias_portatiles_" . date('Y-m-d_H-i') . ".xls";
+        $filename  = "Reporte_Portatiles_Garantias_" . date('Ymd_His') . ".csv";
+        $delimitador = ';';
 
-        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        header("Pragma: no-cache");
-        header("Expires: 0");
+        $headers = [
+            'ID', 'Fecha', 'Analista', 'N° Traslado', 'Placa ID',
+            'Gestión', 'Energiza', 'Da Video', 'Test Lenovo', 'Estado Actual',
+            'Diagnóstico', 'Garantía', 'N° Ticket', 'Razón Garantía',
+            'Estado Final', 'Pieza', 'FRU', 'Pieza Intervenida',
+            'Origen Pieza', 'Serial Disco', 'Motivo Baja'
+        ];
 
-        echo "<meta charset='UTF-8'>";
-        echo "<table border='1'>";
-        echo "<tr style='background-color: #212529; color: #ffffff;'>
-                <th>ID</th><th>Fecha</th><th>Analista</th><th>N° Traslado</th><th>Placa ID</th>
-                <th>Gestión</th><th>Energiza</th><th>Video</th><th>Test Lenovo</th><th>Estado Actual</th>
-                <th>Diagnóstico</th><th>Garantía</th><th>N° Ticket</th><th>Razón Garantía</th>
-                <th>Estado Final</th><th>Pieza</th><th>FRU</th><th>Pieza Intervenida</th>
-                <th>Origen Pieza</th><th>Serial Disco</th><th>Motivo Baja</th>
-              </tr>";
+        $output = "\xEF\xBB\xBF"; // UTF-8 BOM para apertura directa en Excel
+        $output .= implode($delimitador, $headers) . "\r\n";
+
         foreach ($registros as $row) {
-            echo "<tr>";
-            echo "<td>" . $row['id'] . "</td>";
-            echo "<td>" . esc($row['created_at']) . "</td>";
-            echo "<td>" . esc($row['nombre_analista']) . "</td>";
-            echo "<td>" . esc($row['numero_traslado']) . "</td>";
-            echo "<td>" . esc($row['placa_id_equipo']) . "</td>";
-            echo "<td>" . esc($row['tipo_gestion']) . "</td>";
-            echo "<td>" . esc($row['energiza']) . "</td>";
-            echo "<td>" . esc($row['da_video']) . "</td>";
-            echo "<td>" . esc($row['realizo_test_lenovo']) . "</td>";
-            echo "<td>" . esc($row['estado_actual_equipo']) . "</td>";
-            echo "<td>" . esc($row['diagnostico_laptop_intervenido']) . "</td>";
-            echo "<td>" . esc($row['garantia']) . "</td>";
-            echo "<td>" . esc($row['numero_ticket']) . "</td>";
-            echo "<td>" . esc($row['porque_solicita_garantia']) . "</td>";
-            echo "<td>" . esc($row['estado_final_equipo']) . "</td>";
-            echo "<td>" . esc($row['indique_pieza']) . "</td>";
-            echo "<td>" . esc($row['indique_fru']) . "</td>";
-            echo "<td>" . esc($row['pieza_intervenida']) . "</td>";
-            echo "<td>" . esc($row['origen_pieza']) . "</td>";
-            echo "<td>" . esc($row['serial_disco']) . "</td>";
-            echo "<td>" . esc($row['motivo_baja']) . "</td>";
-            echo "</tr>";
+            $diagnostico = str_replace(["\r\n", "\r", "\n", '"'], [' ', ' ', ' ', '""'], (string)($row['diagnostico_laptop_intervenido'] ?? '-'));
+            $razon = str_replace(["\r\n", "\r", "\n", '"'], [' ', ' ', ' ', '""'], (string)($row['porque_solicita_garantia'] ?? '-'));
+            $motivoBaja = str_replace(["\r\n", "\r", "\n", '"'], [' ', ' ', ' ', '""'], (string)($row['motivo_baja'] ?? '-'));
+
+            $line = [
+                $row['id'],
+                $row['created_at'] ?? '',
+                '"' . str_replace('"', '""', (string)($row['nombre_analista'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['numero_traslado'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['placa_id_equipo'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['tipo_gestion'] ?? '')) . '"',
+                '"' . str_replace('"', '""', (string)($row['energiza'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['da_video'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['realizo_test_lenovo'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['estado_actual_equipo'] ?? '-')) . '"',
+                '"' . $diagnostico . '"',
+                '"' . str_replace('"', '""', (string)($row['garantia'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['numero_ticket'] ?? '-')) . '"',
+                '"' . $razon . '"',
+                '"' . str_replace('"', '""', (string)($row['estado_final_equipo'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['indique_pieza'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['indique_fru'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['pieza_intervenida'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['origen_pieza'] ?? '-')) . '"',
+                '"' . str_replace('"', '""', (string)($row['serial_disco'] ?? '-')) . '"',
+                '"' . $motivoBaja . '"',
+            ];
+
+            $output .= implode($delimitador, $line) . "\r\n";
         }
-        echo "</table>";
-        exit;
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv; charset=utf-8')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setHeader('Pragma', 'no-cache')
+            ->setHeader('Expires', '0')
+            ->setBody($output);
     }
 }

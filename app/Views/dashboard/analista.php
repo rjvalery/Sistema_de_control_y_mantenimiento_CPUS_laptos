@@ -102,9 +102,14 @@
                         <p class="small text-muted mb-4 flex-grow-1">
                             Registro de diagnósticos, garantías, intervenciones de piezas y novedades de CPUs.
                         </p>
-                        <a href="<?= base_url('equipos/formulario') ?>" class="btn btn-primary w-100 py-2 fw-semibold">
-                            <i class="fa-solid fa-plus-circle me-1"></i> Nuevo Registro
-                        </a>
+                        <div class="d-flex gap-2 w-100">
+                            <a href="<?= base_url('equipos/formulario') ?>" class="btn btn-primary flex-fill py-2 fw-semibold">
+                                <i class="fa-solid fa-plus-circle me-1"></i> Nuevo
+                            </a>
+                            <a href="<?= base_url('equipos/bitacora') ?>" class="btn btn-outline-secondary flex-fill py-2 fw-semibold">
+                                <i class="fa-solid fa-list me-1"></i> Bitácora
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -120,9 +125,14 @@
                         <p class="small text-muted mb-4 flex-grow-1">
                             Mantenimiento preventivo, limpieza interna, cambio de pasta térmica y gel de plagas.
                         </p>
-                        <a href="<?= base_url('soplado/formulario') ?>" class="btn btn-info text-white w-100 py-2 fw-semibold">
-                            <i class="fa-solid fa-plus-circle me-1"></i> Nuevo Registro
-                        </a>
+                        <div class="d-flex gap-2 w-100">
+                            <a href="<?= base_url('soplado/formulario') ?>" class="btn btn-info text-white flex-fill py-2 fw-semibold">
+                                <i class="fa-solid fa-plus-circle me-1"></i> Nuevo
+                            </a>
+                            <a href="<?= base_url('soplado/bitacora') ?>" class="btn btn-outline-secondary flex-fill py-2 fw-semibold">
+                                <i class="fa-solid fa-list me-1"></i> Bitácora
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -138,9 +148,14 @@
                         <p class="small text-muted mb-4 flex-grow-1">
                             Garantías e intervención de portátiles Lenovo, reporte de FRU y cambio de piezas.
                         </p>
-                        <a href="<?= base_url('portatiles/formulario') ?>" class="btn btn-success w-100 py-2 fw-semibold">
-                            <i class="fa-solid fa-plus-circle me-1"></i> Nuevo Registro
-                        </a>
+                        <div class="d-flex gap-2 w-100">
+                            <a href="<?= base_url('portatiles/formulario') ?>" class="btn btn-success flex-fill py-2 fw-semibold">
+                                <i class="fa-solid fa-plus-circle me-1"></i> Nuevo
+                            </a>
+                            <a href="<?= base_url('portatiles/bitacora') ?>" class="btn btn-outline-secondary flex-fill py-2 fw-semibold">
+                                <i class="fa-solid fa-list me-1"></i> Bitácora
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

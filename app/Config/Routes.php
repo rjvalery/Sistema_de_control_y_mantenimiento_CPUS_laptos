@@ -14,7 +14,6 @@ $routes->get('logout', 'Auth::logout', ['filter' => 'auth']);
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('/', 'Dashboard::index');
     $routes->get('dashboard', 'Dashboard::index');
-    $routes->get('dashboard/exportar-sql', 'Dashboard::exportarSql');
 
 
     $routes->post('usuarios/cambiar-rol', 'Usuarios::cambiarRol');

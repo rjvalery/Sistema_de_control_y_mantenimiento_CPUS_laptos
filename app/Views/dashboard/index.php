@@ -149,48 +149,77 @@
 
 <div class="row g-3 mb-4">
     <div class="col-md-6 col-xl-3">
-        <a href="<?= base_url('equipos/formulario') ?>" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <i class="fa-solid fa-desktop text-primary mb-2"></i>
-                    <h2 class="h6 mb-1 text-dark">Diagnóstico CPU</h2>
-                    <p class="small text-muted mb-0">Nuevo registro de escritorio.</p>
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fa-solid fa-desktop text-primary fs-5 me-2"></i>
+                    <h2 class="h6 mb-0 text-dark fw-bold">Diagnóstico CPU</h2>
+                </div>
+                <p class="small text-muted mb-3 flex-grow-1">Registro y control técnico de CPUs.</p>
+                <div class="d-flex gap-2">
+                    <a href="<?= base_url('equipos/formulario') ?>" class="btn btn-primary btn-sm flex-fill fw-semibold">
+                        <i class="fa-solid fa-plus me-1"></i> Nuevo
+                    </a>
+                    <a href="<?= base_url('equipos/bitacora') ?>" class="btn btn-outline-secondary btn-sm flex-fill fw-semibold">
+                        <i class="fa-solid fa-list me-1"></i> Bitácora
+                    </a>
                 </div>
             </div>
-        </a>
+        </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <a href="<?= base_url('soplado/formulario') ?>" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <i class="fa-solid fa-wind text-info mb-2"></i>
-                    <h2 class="h6 mb-1 text-dark">Soplado</h2>
-                    <p class="small text-muted mb-0">Mantenimiento preventivo.</p>
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fa-solid fa-wind text-info fs-5 me-2"></i>
+                    <h2 class="h6 mb-0 text-dark fw-bold">Soplado</h2>
+                </div>
+                <p class="small text-muted mb-3 flex-grow-1">Mantenimiento preventivo y limpieza.</p>
+                <div class="d-flex gap-2">
+                    <a href="<?= base_url('soplado/formulario') ?>" class="btn btn-info text-white btn-sm flex-fill fw-semibold">
+                        <i class="fa-solid fa-plus me-1"></i> Nuevo
+                    </a>
+                    <a href="<?= base_url('soplado/bitacora') ?>" class="btn btn-outline-secondary btn-sm flex-fill fw-semibold">
+                        <i class="fa-solid fa-list me-1"></i> Bitácora
+                    </a>
                 </div>
             </div>
-        </a>
+        </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <a href="<?= base_url('portatiles/formulario') ?>" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <i class="fa-solid fa-laptop text-success mb-2"></i>
-                    <h2 class="h6 mb-1 text-dark">Portátiles</h2>
-                    <p class="small text-muted mb-0">Garantías Lenovo.</p>
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fa-solid fa-laptop text-success fs-5 me-2"></i>
+                    <h2 class="h6 mb-0 text-dark fw-bold">Portátiles</h2>
+                </div>
+                <p class="small text-muted mb-3 flex-grow-1">Garantías Lenovo e intervención.</p>
+                <div class="d-flex gap-2">
+                    <a href="<?= base_url('portatiles/formulario') ?>" class="btn btn-success btn-sm flex-fill fw-semibold">
+                        <i class="fa-solid fa-plus me-1"></i> Nuevo
+                    </a>
+                    <a href="<?= base_url('portatiles/bitacora') ?>" class="btn btn-outline-secondary btn-sm flex-fill fw-semibold">
+                        <i class="fa-solid fa-list me-1"></i> Bitácora
+                    </a>
                 </div>
             </div>
-        </a>
+        </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <a href="<?= base_url('cargue-masivo') ?>" class="text-decoration-none">
-            <div class="card border-0 shadow-sm h-100 border-start border-danger border-3">
-                <div class="card-body">
-                    <i class="fa-solid fa-file-arrow-up text-danger mb-2"></i>
-                    <h2 class="h6 mb-1 text-dark">Cargue Masivo</h2>
-                    <p class="small text-muted mb-0">Importar Excel / CSV.</p>
+        <div class="card border-0 shadow-sm h-100 border-start border-danger border-3">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fa-solid fa-file-arrow-up text-danger fs-5 me-2"></i>
+                    <h2 class="h6 mb-0 text-dark fw-bold">Cargue Masivo</h2>
+                </div>
+                <p class="small text-muted mb-3 flex-grow-1">Importar inventario Excel / CSV.</p>
+                <div>
+                    <a href="<?= base_url('cargue-masivo') ?>" class="btn btn-outline-danger btn-sm w-100 fw-semibold">
+                        <i class="fa-solid fa-arrow-right me-1"></i> Administrar Cargue
+                    </a>
                 </div>
             </div>
-        </a>
+        </div>
     </div>
 </div>
 
